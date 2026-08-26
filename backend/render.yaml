@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: jifin-charts-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: MONGO_URI
+        value: your_full_standard_connection_string
+      - key: JWT_SECRET
+        value: jifin_charts_secret_key_2026
+      - key: PORT
+        value: 5000

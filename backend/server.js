@@ -12,8 +12,8 @@ connectDB()
 const app = express()
 
 app.use(cors())
-app.use(express.json())        // 👈 this parses JSON request bodies
-app.use(express.urlencoded({ extended: true }))  // 👈 add this too
+app.use(express.json())        
+app.use(express.urlencoded({ extended: true }))  
 
 // routes
 app.use('/api/auth', authRoutes)

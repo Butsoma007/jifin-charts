@@ -137,6 +137,30 @@ const ChartPage = () => {
         }
     }
 
+    const generateInterpretation = (spec, chartType) => {
+        if (!spec.labels || spec.labels.length === 0) return null
+
+        const maxIndex = spec.values.indexOf(Math.max(...spec.values))
+        const minIndex = spec.values.indexOf(Math.min(...spec.values))
+        const avg = (spec.total / spec.values.length).toFixed(2)
+        const maxPct = spec.percentages[maxIndex]
+        const minPct = spec.percentages[minIndex]
+
+        return {
+            dominant: `${spec.labels[maxIndex]} has the highest value of ${formatNumber(spec.values[maxIndex])}, representing ${maxPct}% of the total.`,
+            least: `${spec.labels[minIndex]} has the lowest value of ${formatNumber(spec.values[minIndex])}, accounting for only ${minPct}% of the total.`,
+            average: `The average value across all ${spec.labels.length} categories is ${formatNumber(avg)}.`,
+            spread: spec.values.length > 2
+                ? `The difference between the highest and lowest values is ${formatNumber(Math.max(...spec.values) - Math.min(...spec.values))}.`
+                : null,
+            chartNote: chartType === 'pie'
+                ? `The pie chart shows proportional distribution. Categories above ${(100 / spec.labels.length).toFixed(1)}% are above average share.`
+                : chartType === 'bar'
+                    ? `The bar chart allows direct comparison of absolute values across categories.`
+                    : `The table presents exact values, percentages and cumulative frequencies for precise reference.`,
+        }
+    }
+
     return (
         <div style={styles.page}>
 
@@ -169,7 +193,7 @@ const ChartPage = () => {
 
             {/* tabs */}
             <div style={styles.tabs}>
-                {['chart', 'data', 'summary'].map(tab => (
+                {['chart', 'data', 'summary', 'interpretation'].map(tab => (
                     <button
                         key={tab}
                         style={{
@@ -384,6 +408,98 @@ const ChartPage = () => {
                         </div>
                     </div>
                 )}
+                {/* INTERPRETATION TAB */}
+                {activeTab === 'interpretation' && (
+                    <div style={styles.summaryWrap}>
+                        <h3 style={styles.chartHeading}>Data Interpretation</h3>
+                        <p style={{ fontSize: '13px', color: '#888', textAlign: 'center', marginBottom: '24px' }}>
+                            Auto-generated interpretation of your statistical data
+                        </p>
+
+                        {(() => {
+                            const interp = generateInterpretation(spec, chart.chartType)
+                            if (!interp) return <p style={{ color: '#888', textAlign: 'center' }}>No interpretation available for this chart type.</p>
+
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+                                    {/* key findings */}
+                                    <div style={interpStyles.section}>
+                                        <p style={interpStyles.sectionTitle}>📌 Key Findings</p>
+                                        <div style={interpStyles.finding}>
+                                            <span style={interpStyles.findingIcon}>▲</span>
+                                            <p style={interpStyles.findingText}>{interp.dominant}</p>
+                                        </div>
+                                        <div style={interpStyles.finding}>
+                                            <span style={{ ...interpStyles.findingIcon, color: '#dc2626' }}>▼</span>
+                                            <p style={interpStyles.findingText}>{interp.least}</p>
+                                        </div>
+                                        <div style={interpStyles.finding}>
+                                            <span style={{ ...interpStyles.findingIcon, color: '#f59e0b' }}>≈</span>
+                                            <p style={interpStyles.findingText}>{interp.average}</p>
+                                        </div>
+                                        {interp.spread && (
+                                            <div style={interpStyles.finding}>
+                                                <span style={{ ...interpStyles.findingIcon, color: '#7c3aed' }}>↕</span>
+                                                <p style={interpStyles.findingText}>{interp.spread}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* chart note */}
+                                    <div style={interpStyles.section}>
+                                        <p style={interpStyles.sectionTitle}>📊 Chart Type Note</p>
+                                        <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.7 }}>
+                                            {interp.chartNote}
+                                        </p>
+                                    </div>
+
+                                    {/* distribution analysis */}
+                                    <div style={interpStyles.section}>
+                                        <p style={interpStyles.sectionTitle}>📈 Distribution Analysis</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            {safeLabels.map((label, i) => {
+                                                const pct = Number(safePercentages[i]) || 0
+                                                const avgPct = 100 / safeLabels.length
+                                                const status = pct > avgPct ? 'above' : pct < avgPct ? 'below' : 'at'
+                                                const statusColor = pct > avgPct ? '#16a34a' : pct < avgPct ? '#dc2626' : '#888'
+
+                                                return (
+                                                    <div key={i} style={interpStyles.distRow}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '150px' }}>
+                                                            <span style={{
+                                                                width: '10px', height: '10px',
+                                                                borderRadius: '3px',
+                                                                background: safeColors[i] || '#095DE9',
+                                                                flexShrink: 0,
+                                                            }} />
+                                                            <span style={{ fontSize: '13px' }}>{label}</span>
+                                                        </div>
+                                                        <div style={styles.barOuter}>
+                                                            <div style={{
+                                                                width: `${pct}%`,
+                                                                height: '100%',
+                                                                background: safeColors[i] || '#095DE9',
+                                                                borderRadius: '4px',
+                                                            }} />
+                                                        </div>
+                                                        <span style={{ fontSize: '12px', color: statusColor, minWidth: '110px', textAlign: 'right' }}>
+                                                            {pct}% — {status} average
+                                                        </span>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                        <p style={{ fontSize: '12px', color: '#aaa', marginTop: '10px' }}>
+                                            Average share per category: {(100 / safeLabels.length).toFixed(1)}%
+                                        </p>
+                                    </div>
+
+                                </div>
+                            )
+                        })()}
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -544,6 +660,50 @@ const styles = {
         borderRadius: '5px',
         overflow: 'hidden',
     },
+}
+
+const interpStyles = {
+  section: {
+    background: '#f9f9f9',
+    borderRadius: '10px',
+    padding: '18px 20px',
+    border: '0.5px solid #e2e2e2',
+  },
+  sectionTitle: {
+    fontSize: '13px',
+    fontWeight: '700',
+    color: '#444',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '14px',
+  },
+  finding: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    marginBottom: '10px',
+    padding: '10px 12px',
+    background: 'white',
+    borderRadius: '8px',
+    border: '0.5px solid #e2e2e2',
+  },
+  findingIcon: {
+    fontSize: '16px',
+    color: '#16a34a',
+    flexShrink: 0,
+    marginTop: '1px',
+  },
+  findingText: {
+    fontSize: '14px',
+    color: '#444',
+    lineHeight: 1.6,
+    margin: 0,
+  },
+  distRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
 }
 
 export default ChartPage
