@@ -11,7 +11,12 @@ connectDB()
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+  origin: [
+    'http://localhost/5175',
+    'https://jifin-charts.vercel.app'
+  ]
+}))
 app.use(express.json())        
 app.use(express.urlencoded({ extended: true }))  
 
