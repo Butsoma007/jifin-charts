@@ -13,7 +13,7 @@ const app = express()
 
 app.use(cors({
   origin: [
-    'http://localhost/5175',
+    'http://localhost:5175',
     'https://jifin-charts.vercel.app'
   ],
   credentials: true
