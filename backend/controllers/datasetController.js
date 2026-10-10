@@ -1,4 +1,5 @@
 import Dataset from '../models/Dataset.js'
+import ChartOutput from '../models/ChartOutput.js'  // ✅ Import
 
 // POST /api/datasets
 export const createDataset = async (req, res) => {
@@ -19,6 +20,12 @@ export const createDataset = async (req, res) => {
       if (typeof item.value !== 'number' || item.value < 0) {
         return res.json({ success: false, message: 'Each value must be a positive number' })
       }
+    }
+
+    // ✅ Check if dataset with same title already exists for this user
+    const existingDataset = await Dataset.findOne({ userId: req.userId, title })
+    if (existingDataset) {
+      return res.json({ success: false, message: 'Dataset with this title already exists' })
     }
 
     const dataset = await Dataset.create({
@@ -71,12 +78,16 @@ export const updateDataset = async (req, res) => {
   }
 }
 
-// DELETE /api/datasets/:id
+// DELETE /api/datasets/:id - ✅ CASCADE DELETE CHARTS
 export const deleteDataset = async (req, res) => {
   try {
     const dataset = await Dataset.findOneAndDelete({ _id: req.params.id, userId: req.userId })
     if (!dataset) return res.json({ success: false, message: 'Dataset not found' })
-    res.json({ success: true, message: 'Dataset deleted' })
+
+    // ✅ Delete all charts related to this dataset
+    await ChartOutput.deleteMany({ datasetId: req.params.id })
+
+    res.json({ success: true, message: 'Dataset and related charts deleted' })
   } catch (err) {
     res.json({ success: false, message: err.message })
   }

@@ -17,7 +17,7 @@ const chartOutputSchema = new mongoose.Schema({
     required: true,
   },
   chartSpec: {
-    type: Object,   // stores the computed chart config (labels, data, colors etc)
+    type: Object,
     required: true,
   },
   title: {
@@ -25,5 +25,8 @@ const chartOutputSchema = new mongoose.Schema({
     required: true,
   },
 }, { timestamps: true })
+
+// ✅ Prevent creating the same chart type from same dataset twice
+chartOutputSchema.index({ datasetId: 1, userId: 1, chartType: 1 }, { unique: true })
 
 export default mongoose.model('ChartOutput', chartOutputSchema)

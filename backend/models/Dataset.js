@@ -11,7 +11,7 @@ const dataValueSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-}, { _id: false })  // embedded — no separate _id per entry
+}, { _id: false })
 
 const datasetSchema = new mongoose.Schema({
   userId: {
@@ -24,16 +24,20 @@ const datasetSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  data: [dataValueSchema],   // embedded array of category/value pairs
+  data: [dataValueSchema],
   total: {
     type: Number,
     default: 0,
   },
 }, { timestamps: true })
 
+// ✅ Prevent duplicate datasets with same title per user
+datasetSchema.index({ userId: 1, title: 1 }, { unique: true })
+
 // auto-compute total before saving
 datasetSchema.pre('save', function (next) {
   this.total = this.data.reduce((sum, item) => sum + item.value, 0)
+  next()
 })
 
 export default mongoose.model('Dataset', datasetSchema)
