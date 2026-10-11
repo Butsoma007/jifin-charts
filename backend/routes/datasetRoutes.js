@@ -12,5 +12,6 @@ router.get('/', authMiddleware, getUserDatasets)
 router.get('/:id', authMiddleware, getDataset)
 router.put('/:id', authMiddleware, updateDataset)
 router.delete('/:id', authMiddleware, deleteDataset)
+router.put('/:id', authMiddleware, updateDataset)
 
 export default router

@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useApp } from '../context/AppContext'
+import { loginForgotButtonStyles } from '../styles/loginForgotButtonStyles'
 
 const LoginPage = () => {
   const { setToken, setUser, API_URL } = useApp()
@@ -10,6 +11,8 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [forgotHover, setForgotHover] = useState(false)
+  const [forgotFocus, setForgotFocus] = useState(false)
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -35,6 +38,20 @@ const LoginPage = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const getForgotButtonStyle = () => {
+    let baseStyle = { ...loginForgotButtonStyles.buttonWithIcon }
+
+    if (forgotHover) {
+      baseStyle = { ...baseStyle, ...loginForgotButtonStyles.buttonHover }
+    }
+
+    if (forgotFocus) {
+      baseStyle = { ...baseStyle, ...loginForgotButtonStyles.buttonFocus }
+    }
+
+    return baseStyle
   }
 
   return (
@@ -73,6 +90,22 @@ const LoginPage = () => {
               style={styles.input}
               required
             />
+          </div>
+
+          {/* ✅ STYLED FORGOT PASSWORD BUTTON */}
+          <div style={loginForgotButtonStyles .container}>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              onMouseEnter={() => setForgotHover(true)}
+              onMouseLeave={() => setForgotHover(false)}
+              onFocus={() => setForgotFocus(true)}
+              onBlur={() => setForgotFocus(false)}
+              style={getForgotButtonStyle()}
+            >
+              <span style={loginForgotButtonStyles .icon}>🔑</span>
+              Forgot Password?
+            </button>
           </div>
 
           {error && <p style={styles.error}>{error}</p>}

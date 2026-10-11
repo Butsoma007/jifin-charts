@@ -31,13 +31,7 @@ const datasetSchema = new mongoose.Schema({
   },
 }, { timestamps: true })
 
-// ✅ Prevent duplicate datasets with same title per user
+// ✅ UNIQUE dataset per user - userId + title combination must be unique
 datasetSchema.index({ userId: 1, title: 1 }, { unique: true })
-
-
-datasetSchema.pre('save', function (next) {
-  this.total = this.data.reduce((sum, item) => sum + item.value, 0)
-  next()  
-})
 
 export default mongoose.model('Dataset', datasetSchema)

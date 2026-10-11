@@ -266,13 +266,25 @@ const DatasetPage = () => {
           )}
 
           {/* action buttons */}
-          <button
-            style={{ ...styles.generateBtn, opacity: loading ? 0.7 : 1 }}
-            onClick={handleSaveAndGenerate}
-            disabled={loading}
-          >
-            {loading ? 'Generating...' : '✨ Save & Generate Chart'}
-          </button>
+          {selectedDataset ? (
+            // ✅ If dataset is selected, just generate chart from it
+            <button
+              style={{ ...styles.generateBtn, opacity: loading ? 0.7 : 1 }}
+              onClick={handleGenerateFromExisting}
+              disabled={loading}
+            >
+              {loading ? 'Generating...' : '✨ Generate Chart'}
+            </button>
+          ) : (
+            // ✅ If no dataset, create new one + generate chart
+            <button
+              style={{ ...styles.generateBtn, opacity: loading ? 0.7 : 1 }}
+              onClick={handleSaveAndGenerate}
+              disabled={loading}
+            >
+              {loading ? 'Generating...' : '✨ Save & Generate Chart'}
+            </button>
+          )}
 
           <button
             style={styles.backBtn}

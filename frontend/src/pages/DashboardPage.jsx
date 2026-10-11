@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { formatDate } from '../utils/helpers'
+import { useState } from 'react'
 
 const DashboardPage = () => {
   const { user, datasets, charts, fetchDatasets, fetchCharts, token, API_URL } = useApp()
   const navigate = useNavigate()
+  const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
 
   const handleDeleteDataset = async (id) => {
     if (!window.confirm('Delete this dataset and all its charts?')) return
@@ -28,7 +31,14 @@ const DashboardPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
-      if (data.success) fetchCharts()
+      if (data.success) {
+        // ✅ Refetch immediately after deletion
+        await fetchDatasets()
+        await fetchCharts()
+        setSuccess('Dataset deleted successfully')
+      } else {
+        setError(data.message)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -95,14 +105,14 @@ const DashboardPage = () => {
 
           {datasets.length === 0
             ? <div style={styles.empty}>
-                <p>No datasets yet.</p>
-                <button
-                  style={styles.emptyBtn}
-                  onClick={() => navigate('/datasets')}
-                >
-                  Create your first dataset
-                </button>
-              </div>
+              <p>No datasets yet.</p>
+              <button
+                style={styles.emptyBtn}
+                onClick={() => navigate('/datasets')}
+              >
+                Create your first dataset
+              </button>
+            </div>
             : datasets.map(ds => (
               <div key={ds._id} style={styles.card}>
                 <div style={styles.cardTop}>
@@ -112,12 +122,20 @@ const DashboardPage = () => {
                       {ds.data.length} categories · Total: {ds.total} · {formatDate(ds.createdAt)}
                     </p>
                   </div>
-                  <button
-                    style={styles.deleteBtn}
-                    onClick={() => handleDeleteDataset(ds._id)}
-                  >
-                    ✕
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      style={styles.editBtn}
+                      onClick={() => navigate(`/edit-dataset/${ds._id}`)}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      style={styles.deleteBtn}
+                      onClick={() => handleDeleteDataset(ds._id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
                 <div style={styles.categoryTags}>
                   {ds.data.slice(0, 3).map((d, i) => (
@@ -146,11 +164,11 @@ const DashboardPage = () => {
 
           {charts.length === 0
             ? <div style={styles.empty}>
-                <p>No charts generated yet.</p>
-                <p style={{ fontSize: '13px', color: '#aaa', marginTop: '6px' }}>
-                  Create a dataset first then generate a chart.
-                </p>
-              </div>
+              <p>No charts generated yet.</p>
+              <p style={{ fontSize: '13px', color: '#aaa', marginTop: '6px' }}>
+                Create a dataset first then generate a chart.
+              </p>
+            </div>
             : charts.map(chart => (
               <div key={chart._id} style={styles.card}>
                 <div style={styles.cardTop}>
@@ -206,6 +224,17 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '28px',
+  },
+  editBtn: {
+    background: '#e0f2fe',
+    color: '#0369a1',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '6px 12px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: '500',
+    flexShrink: 0,
   },
   bannerTitle: {
     fontSize: '22px',

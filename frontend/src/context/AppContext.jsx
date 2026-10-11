@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 
 const AppContext = createContext(null)
-export const API_URL = import.meta.env.VITE_API_URL
+export const API_URL = import.meta.env.VITE_API_URI
 
 const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null)

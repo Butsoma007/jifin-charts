@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import ChartOutput from '../models/ChartOutput.js'
 import Dataset from '../models/Dataset.js'
 
@@ -149,12 +150,22 @@ export const getChart = async (req, res) => {
 }
 
 // DELETE /api/charts/:id
-export const deleteChart = async (req, res) => {
+export const deleteDataset = async (req, res) => {
   try {
-    const chart = await ChartOutput.findOneAndDelete({ _id: req.params.id, userId: req.userId })
-    if (!chart) return res.json({ success: false, message: 'Chart not found' })
-    res.json({ success: true, message: 'Chart deleted' })
+    // ✅ Convert to ObjectId
+    const datasetObjectId = new mongoose.Types.ObjectId(req.params.id)
+    
+    const dataset = await Dataset.findOneAndDelete({ _id: req.params.id, userId: req.userId })
+    if (!dataset) return res.json({ success: false, message: 'Dataset not found' })
+
+    // ✅ Delete all charts - use ObjectId for comparison
+    console.log('Deleting charts for datasetId:', datasetObjectId)
+    const result = await ChartOutput.deleteMany({ datasetId: datasetObjectId })
+    console.log('Deleted charts count:', result.deletedCount)
+
+    res.json({ success: true, message: `Dataset and ${result.deletedCount} related charts deleted` })
   } catch (err) {
+    console.error('Delete error:', err)
     res.json({ success: false, message: err.message })
   }
 }

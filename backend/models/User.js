@@ -22,6 +22,15 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  // ✅ Add these fields for password reset
+  resetToken: {
+    type: String,
+    default: null,
+  },
+  resetTokenExpiry: {
+    type: Date,
+    default: null,
+  },
 }, { timestamps: true })
 
 export default mongoose.model('User', userSchema)

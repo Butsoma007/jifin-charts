@@ -6,6 +6,9 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import DatasetPage from './pages/DatasetPage'
 import ChartPage from './pages/ChartPage'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import EditDataset from './pages/EditDataset'
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useApp()
@@ -16,7 +19,7 @@ const App = () => {
   const { token } = useApp()
 
   return (
-    <div onClick={() => {}}>
+    <div onClick={() => { }}>
       <Navbar />
       <Routes>
         <Route path='/' element={
@@ -34,6 +37,9 @@ const App = () => {
           <ProtectedRoute><ChartPage /></ProtectedRoute>
         } />
         <Route path='*' element={<Navigate to='/' />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/edit-dataset/:id" element={<EditDataset />} />
       </Routes>
     </div>
   )

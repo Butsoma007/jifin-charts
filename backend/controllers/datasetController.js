@@ -12,7 +12,7 @@ export const createDataset = async (req, res) => {
       })
     }
 
-    // validate each entry has category and positive value
+    // Validate each entry
     for (const item of data) {
       if (!item.category || item.category.trim() === '') {
         return res.json({ success: false, message: 'Each entry must have a category name' })
@@ -28,10 +28,14 @@ export const createDataset = async (req, res) => {
       return res.json({ success: false, message: 'Dataset with this title already exists' })
     }
 
+    // ✅ Calculate total HERE
+    const total = data.reduce((sum, item) => sum + item.value, 0)
+
     const dataset = await Dataset.create({
       userId: req.userId,
       title,
       data,
+      total,  // ✅ Pass total explicitly
     })
 
     res.json({ success: true, dataset })
@@ -62,14 +66,37 @@ export const getDataset = async (req, res) => {
 }
 
 // PUT /api/datasets/:id
+// PUT /api/datasets/:id
 export const updateDataset = async (req, res) => {
   const { title, data } = req.body
   try {
+    if (!title || !data || data.length < 2) {
+      return res.json({
+        success: false,
+        message: 'Title and at least 2 data entries are required'
+      })
+    }
+
+    // Validate each entry
+    for (const item of data) {
+      if (!item.category || item.category.trim() === '') {
+        return res.json({ success: false, message: 'Each entry must have a category name' })
+      }
+      if (typeof item.value !== 'number' || item.value < 0) {
+        return res.json({ success: false, message: 'Each value must be a positive number' })
+      }
+    }
+
+    // ✅ Calculate new total
+    const total = data.reduce((sum, item) => sum + item.value, 0)
+
     const dataset = await Dataset.findOne({ _id: req.params.id, userId: req.userId })
     if (!dataset) return res.json({ success: false, message: 'Dataset not found' })
 
-    if (title) dataset.title = title
-    if (data) dataset.data = data
+    // Update fields
+    dataset.title = title
+    dataset.data = data
+    dataset.total = total
     await dataset.save()
 
     res.json({ success: true, dataset })
